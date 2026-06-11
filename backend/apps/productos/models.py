@@ -4,7 +4,7 @@ from django.db import models
 # Create your models here.
 
 class TipoCategoria(models.TextChoices):
-    GRANOS_Y_CEREALES = "GYC", "Granos y cereales"
+    PERECEDEROS_GRANOS_Y_CEREALES = "PGC", "Perecederos, granos y cereales"
     FRUTAS_Y_VERDURAS = "FYV", "Frutas y verduras"
     LACTEOS_Y_DERIVADOS = "LYD", "Lácteos y derivados"
     HUEVOS_Y_PROTEINAS = "HYP", "Huevos y proteínas"

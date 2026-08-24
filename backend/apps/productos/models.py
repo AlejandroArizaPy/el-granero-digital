@@ -59,14 +59,15 @@ class Producto(models.Model):
     )
     
     def clean(self):
-        if self.usuario.rol != "campesino":
-            raise ValidationError(
-                "Solo los usuarios con rol campesino pueden publicar productos."
+        if self.usuario_id is not None:
+            if self.usuario.rol != "campesino":
+                raise ValidationError(
+                    "Solo los usuarios con rol campesino pueden publicar productos."
                 )
         
-    def save(self):
+    def save(self, *args, **kwargs):
         self.full_clean()
-        super().save()
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.nombre

@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista de productos</title>
+</head>
+<body>
+
+    <h1>Productos registrados</h1>
+
+    {% if productos %}
+        <ul>
+            {% for producto in productos %}
+                <li>
+                    <strong>{{ producto.nombre }}</strong>
+                    - ${{ producto.precio }}
+                    - Stock: {{ producto.stock }}
+                    - Categoría: {{ producto.categoria }}
+                    - Publicado por: {{ producto.usuario.username }}
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>No hay productos registrados.</p>
+    {% endif %}
+
+    <a href="{% url 'crear_producto' %}">
+        Crear otro producto
+    </a>
+
+</body>
+</html>

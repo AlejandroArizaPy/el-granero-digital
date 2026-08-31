@@ -1,5 +1,7 @@
 from django.shortcuts import render, redirect
 from .forms import ProductoForm
+from rest_framework import viewsets
+from .serializers import ProductoSerializer
 from apps.productos.models import Producto
 
 
@@ -61,3 +63,7 @@ def eliminar_producto(request, id):
     return render(request, "productos/eliminar_producto.html", {
         "producto": producto
     })
+    
+class ProductoViewSet(viewsets.ModelViewSet):
+    queryset = Producto.objects.all()
+    serializer_class = ProductoSerializer

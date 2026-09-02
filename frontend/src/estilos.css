@@ -1,0 +1,600 @@
+/* Este css se hizo en un solo archivo, de igual manera lo he organizado por secciones de la pagina web, como login, index etc */
+#root {
+  display: flex; /* Activa el modelo flexbox en el contenedor raíz */
+  flex-direction: column; /* Apila el Header, la vista actual y el Footer verticalmente */
+  min-height: 100vh; /* Define la altura mínima al 100% de la ventana del navegador */
+  width: 100%; /* Expande el ancho al 100% */
+}
+
+/* ====== Index o Inicio ====== */
+
+html, body {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+    margin: 0;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    background: #f7f8f7;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+.header {
+    background: #2e7d32;
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 30px;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+}
+
+.logo img {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-right: 10px;
+}
+
+nav a {
+    color: white;
+    text-decoration: none;
+    margin: 0 10px;
+    font-weight: bold;
+}
+
+nav a:hover {
+    text-decoration: underline;
+}
+
+.contenedor {
+    text-align: center;
+    padding: 30px;
+    flex: 1;
+}
+
+h2 {
+    font-size: 32px;
+}
+
+.descripcion {
+    max-width: 800px;
+    margin: auto;
+    margin-bottom: 30px;
+}
+
+.contenido {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 80px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.opciones {
+    display: flex;
+    flex: 1;
+    justify-content: center;
+    gap: 40px;
+}
+
+.opcion {
+    text-align: center;
+    cursor: pointer;
+}
+
+.opcion img {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    border: 4px solid #2e7d32;
+    object-fit: cover;
+    display: block;
+    margin: auto;
+    transition: transform 0.2s ease;
+}
+
+.opcion:hover img {
+    transform: scale(1.08);
+}
+
+
+.opcion p {
+    font-weight: bold;
+    text-decoration: underline;
+}
+
+.imagen {
+    flex: 1;
+}
+
+
+.imagen img {
+    width: 350px;
+    border: 3px solid #333;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+/* ====== login ====== */
+
+.login-container {
+  display: flex;
+  gap: 0;
+  padding: 40px;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.login-box {
+  background: #1b5e20;
+  color: white;
+  padding: 30px;
+  border-radius: 15px 0 15px;
+  width: 400px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.login-box h2 {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.login-box label {
+  font-size: 14px;
+}
+
+.login-box input[type="text"],
+.login-box input[type="password"] {
+  width: 100%;
+  padding: 8px;
+  margin: 10px 0 15px;
+  border-radius: 5px;
+  border: none;
+}
+
+.remember {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-bottom: 15px;
+}
+
+.login-box button {
+  width: 100%;
+  padding: 10px;
+  background: #222;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.login-box button:hover {
+  background: #000;
+}
+
+.links {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 15px;
+}
+
+.links a {
+  color: #c8e6c9;
+  font-size: 12px;
+  text-decoration: none;
+}
+
+.login-imagen {
+  width: 320px;
+  border-radius: 0 15px 15px 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+
+.login-imagen img {
+  width: 100%;
+  height: 120%;
+  border-radius: 5px;
+  object-fit: contain;
+}
+
+.filtros {
+    display: flex;
+    gap: 10px;
+    padding: 15px 30px;
+    background: #ddd;
+}
+
+.filtros input,
+.filtros select {
+    padding: 8px;
+    border-radius: 5px;
+    border: 1px solid #aaa;
+}
+
+.productos {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+}
+
+.card {
+    background: #f5f5f5;
+    border-radius: 8px;
+    padding: 10px;
+    text-align: center;
+    border: 1px solid #aaa;
+}
+
+.card img {
+    width: 100%;
+    height: 120px;
+    object-fit: cover;
+    border-radius: 5px;
+}
+
+.estrellas {
+    color: gold;
+    margin: 5px 0;
+}
+
+.card button {
+    background: #4caf50;
+    border: none;
+    padding: 8px 12px;
+    color: white;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+/* ====== Detalles ====== */
+
+.detalle-container {
+    padding: 30px;
+}
+
+.detalle-card {
+    display: flex;
+    background: #f5f5f5;
+    border-radius: 10px;
+    padding: 20px;
+    gap: 30px;
+    border: 1px solid #aaa;
+}
+
+/* IMAGEN */
+.detalle-img {
+    width: 40%;
+}
+
+.detalle-img img {
+    width: 75%;
+    border-radius: 5px;
+}
+
+.detalle-info {
+    width: 60%;
+}
+
+.detalle-info h2 {
+    text-align: center;
+}
+
+.descripcion-producto {
+    margin: 10px 0;
+}
+
+.calificacion span {
+    color: gold;
+}
+
+.cantidad {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 15px 0;
+}
+
+.cantidad button {
+    padding: 5px 10px;
+    cursor: pointer;
+}
+
+.btn-carrito {
+    background: #66bb6a;
+    border: none;
+    padding: 12px;
+    width: 100%;
+    border-radius: 5px;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.volver {
+    display: block;
+    margin-top: 15px;
+    text-align: center;
+    color: black;
+    font-weight: bold;
+}
+
+.relacionados {
+    padding: 20px 30px;
+}
+
+.productos {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+}
+
+.card {
+    background: #f5f5f5;
+    border-radius: 8px;
+    padding: 10px;
+    text-align: center;
+    border: 1px solid #aaa;
+}
+
+.card img {
+    width: 100%;
+    height: 100px;
+    object-fit: cover;
+}
+
+.estrellas {
+    color: gold;
+}
+
+/* ====== carrito ====== */
+
+.container {
+    padding: 30px;
+}
+
+h2 {
+    text-align: center;
+}
+
+.carrito {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 30px;
+}
+
+table {
+    width: 65%;
+    border-collapse: collapse;
+    background: white;
+}
+
+th, td {
+    padding: 12px;
+    border-bottom: 1px solid #ddd;
+    text-align: center;
+}
+
+th {
+    background-color: #e0e0e0;
+}
+
+.cantidad {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 5px;
+}
+
+.cantidad button {
+    width: 30px;
+    height: 30px;
+    border: none;
+    background-color: #2e7d32;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.resumen {
+    width: 30%;
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0px 0px 10px rgba(0,0,0,0.2);
+}
+
+.resumen p {
+    margin: 10px 0;
+}
+
+.btn {
+    display: block;
+    text-align: center;
+    background-color: #4caf50;
+    color: white;
+    padding: 10px;
+    margin-top: 15px;
+    text-decoration: none;
+    border-radius: 5px;
+}
+
+.volver {
+    margin-top: 20px;
+    display: inline-block;
+    text-decoration: none;
+    color: black;
+    font-weight: bold;
+}
+
+/* ====== Checkout o confirmación ======= */
+
+.container-checkout {
+    padding: 30px;
+}
+
+h2 {
+    text-align: center;
+}
+
+.contenido-checkout {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    margin-top: 30px;
+}
+
+.formulario-checkout {
+    background-color: #2e7d32;
+    padding: 30px;
+    border-radius: 15px;
+    width: 350px;
+    color: white;
+}
+
+.formulario-checkout h3 {
+    margin-top: 0;
+}
+
+.formulario-checkout label {
+    display: block;
+    margin-top: 10px;
+}
+
+.formulario-checkout input,
+.formulario-checkout select,
+.formulario-checkout textarea {
+    width: 100%;
+    padding: 8px;
+    margin-top: 5px;
+    border-radius: 5px;
+    border: none;
+}
+
+textarea {
+    resize: none;
+    height: 60px;
+}
+
+.fila-checkout {
+    display: flex;
+    gap: 10px;
+}
+
+.fila-checkout div {
+    width: 100%;
+}
+
+.resumen-checkout {
+    background-color: #f5f5f5;
+    padding: 20px;
+    border-radius: 15px;
+    width: 300px;
+    box-shadow: 0px 0px 8px rgba(0,0,0,0.2);
+}
+
+.resumen-checkout h3 {
+    margin-top: 0;
+}
+
+.resumen-checkout p {
+    margin: 10px 0;
+}
+
+.total-checkout {
+    font-weight: bold;
+    margin-top: 15px;
+}
+
+.btn-checkout {
+    display: block;
+    text-align: center;
+    background-color: #66bb6a;
+    color: white;
+    padding: 10px;
+    margin-top: 15px;
+    text-decoration: none;
+    border-radius: 8px;
+}
+
+/* ====== Compra realizada ====== */
+
+.container-pedido {
+    padding: 40px;
+    text-align: center;
+}
+
+.card-pedido {
+    background-color: #f5f5f5;
+    padding: 30px;
+    border-radius: 15px;
+    width: 600px;
+    margin: auto;
+    box-shadow: 0px 0px 10px rgba(0,0,0,0.2);
+}
+
+.icono-pedido {
+    background-color: #2e7d32;
+    color: white;
+    font-size: 40px;
+    width: 80px;
+    height: 80px;
+    margin: auto;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.info-pedido {
+    display: flex;
+    margin-top: 20px;
+    text-align: left;
+}
+
+.col-pedido {
+    width: 50%;
+    padding: 10px;
+}
+
+.col-pedido:first-child {
+    border-right: 1px solid #ccc;
+}
+
+.botones-pedido {
+    margin-top: 20px;
+}
+
+.btn-pedido {
+    display: inline-block;
+    background-color: #66bb6a;
+    color: white;
+    padding: 10px 20px;
+    margin: 10px;
+    text-decoration: none;
+    border-radius: 8px;
+}
+
+footer {
+  margin-top: auto;
+  background: #2e7d32;
+  color: white;
+  text-align: center;
+  padding: 10px;
+}

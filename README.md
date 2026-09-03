@@ -17,7 +17,6 @@ Plataforma tecnológica enfocada en conectar campesinos y compradores finales si
 ## Integrantes
 - Alejandro Ariza Mojica
 - Duvan Guerra
-- Jeremy Sebastián Barón
 - Robert Andrei Vergara Garavito
 
 ## Funcionalidades principales

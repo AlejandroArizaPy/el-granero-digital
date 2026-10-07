@@ -1,5 +1,6 @@
 from django.contrib import admin
 from .models import Usuario
 
-# Register your models here.
+
+# Permite gestionar los usuarios desde el panel administrativo de Django.
 admin.site.register(Usuario)

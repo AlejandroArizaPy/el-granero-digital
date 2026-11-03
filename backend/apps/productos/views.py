@@ -1,8 +1,11 @@
 from django.shortcuts import render, redirect
 from .forms import ProductoForm
 from rest_framework import viewsets
+from rest_framework import status
+from rest_framework.response import Response
 from .serializers import ProductoSerializer
 from apps.productos.models import Producto
+from apps.productos.permissions import PermisoProductos
 
 
 def crear_producto(request):
@@ -65,5 +68,28 @@ def eliminar_producto(request, id):
     })
     
 class ProductoViewSet(viewsets.ModelViewSet):
-    queryset = Producto.objects.all()
+    # Solo expone productos activos en la API.
+    queryset = Producto.objects.filter(activo=True)
+
+    # Define el serializer encargado de convertir productos a JSON
+    # y validar los datos recibidos.
     serializer_class = ProductoSerializer
+
+    # Aplica las reglas de acceso según el rol y propietario.
+    permission_classes = [PermisoProductos]
+
+    def perform_create(self, serializer):
+        # Asigna automáticamente el campesino autenticado como propietario.
+        # El cliente no puede elegir quién publica el producto.
+        serializer.save(usuario=self.request.user)
+
+    def destroy(self, request, *args, **kwargs):
+        # Obtiene el producto y verifica los permisos correspondientes.
+        producto = self.get_object()
+
+        # Eliminación lógica: conserva el registro, pero lo desactiva.
+        producto.activo = False
+        producto.save()
+
+        # Confirma la eliminación sin devolver contenido.
+        return Response(status=status.HTTP_204_NO_CONTENT)

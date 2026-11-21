@@ -1,50 +1,48 @@
 from django.db import models
-from django.db.models import Sum
 from apps.usuarios.models import Usuario
 from apps.productos.models import Producto
+from django.core.validators import MinValueValidator
+from decimal import Decimal
 
-# Create your models here.
+
 class EstadoPedido(models.TextChoices):
     PENDIENTE = "PDT", "Pendiente"
     EN_PREPARACION = "ENP", "En preparación"
     COMPLETADO = "CPO", "Completado"
     CANCELADO = "CLO", "Cancelado"
     
-    
-class Ciudad(models.TextChoices):
-    BOGOTA = "BGT", "Bogotá"
-    CALI = "CAL", "Cali"
-    MEDELLIN = "MDN", "Medellín"
-    BARRANQUILLA = "BQA", "Barranquilla"
-    MANIZALES = "MNS" , "Manizales"
-    
 
 class MetodoPago(models.TextChoices):
-    EFECTIVO = "EFO", "Efectivo"
-    TRANSFERENCIA = "TRF", "Transferencia"
-    PSE = "PSE", "PSE (Pagos en línea)"
-    BILLETERAS_DIGITALES = "BDS", "Billeteras dígitales"    
+    EFECTIVO = "EFO", "Efectivo contraentrega"
+    TRANSFERENCIA = "TRF", "Transferencia bancaria"
+ 
     
 
 class Pedido(models.Model):
-    usuario = models.ForeignKey(Usuario, on_delete=models.PROTECT)
+    comprador = models.ForeignKey(Usuario,
+                                on_delete=models.PROTECT,
+                                related_name="pedidos_realizados")
+    vendedor = models.ForeignKey(Usuario,
+                                on_delete=models.PROTECT,
+                                related_name="pedidos_recibidos") 
     fecha = models.DateTimeField(auto_now_add=True)
     estado = models.CharField(
         max_length=3,
-        choices = EstadoPedido.choices
+        choices = EstadoPedido.choices,
+        default=EstadoPedido.PENDIENTE
     )
     direccion_entrega = models.CharField(max_length=120)
-    total = models.DecimalField(max_digits=8, decimal_places=2)
+    total = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal("0.00"))
     
     def recalcular_total(self):
-        resultado = self.detalles.aggregate(Sum("subtotal", default=0))
-        self.total = resultado["subtotal__sum"]
-        self.save()
+        sum_subtotales = Decimal("0.00")
+        for detalle in self.detalles.all():
+            sum_subtotales += (detalle.cantidad * detalle.precio_unitario)
         
-    ciudad = models.CharField(
-        max_length=3,
-        choices = Ciudad.choices
-    )
+        self.total = sum_subtotales
+        self.save(update_fields=["total"])
+        
+    ciudad = models.CharField(max_length=100)
     metodo_pago = models.CharField(
         max_length=3,
         choices = MetodoPago.choices
@@ -53,5 +51,15 @@ class Pedido(models.Model):
 class DetallePedido(models.Model):
     pedido = models.ForeignKey(Pedido, on_delete=models.CASCADE,related_name="detalles")
     producto = models.ForeignKey(Producto, on_delete=models.PROTECT)
-    cantidad = models.PositiveIntegerField()
-    subtotal = models.DecimalField(max_digits=10, decimal_places=2)
+    cantidad = models.PositiveIntegerField(validators=[MinValueValidator(1)])
+    precio_unitario = models.DecimalField(max_digits=10,
+                                          decimal_places=2,
+                                          validators=[MinValueValidator(0.01)]
+                                          )
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['pedido', 'producto'], 
+                name='unique_producto_por_pedido'
+            )
+        ]

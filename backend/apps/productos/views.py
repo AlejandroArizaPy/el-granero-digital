@@ -1,5 +1,8 @@
-from django.shortcuts import render, redirect
+from django.contrib.auth.decorators import login_required
+from django.http import HttpResponseForbidden
+from django.shortcuts import get_object_or_404, render, redirect
 from .forms import ProductoForm
+from apps.usuarios.models import Roles
 from rest_framework import viewsets
 from rest_framework import status
 from rest_framework.response import Response
@@ -8,7 +11,11 @@ from apps.productos.models import Producto
 from apps.productos.permissions import PermisoProductos
 
 
+@login_required
 def crear_producto(request):
+    if request.user.rol != Roles.CAMPESINO:
+        return HttpResponseForbidden()
+
     if request.method == "POST":
         formulario = ProductoForm(request.POST, request.FILES)
 
@@ -33,8 +40,12 @@ def lista_productos(request):
         "productos": productos
     })
 
+@login_required
 def editar_producto(request, id):
-    producto = Producto.objects.get(id=id)
+    if request.user.rol != Roles.CAMPESINO:
+        return HttpResponseForbidden()
+
+    producto = get_object_or_404(Producto, id=id, usuario=request.user)
 
     if request.method == "POST":
         formulario = ProductoForm(
@@ -55,8 +66,12 @@ def editar_producto(request, id):
         "producto": producto
     })
     
+@login_required
 def eliminar_producto(request, id):
-    producto = Producto.objects.get(id=id)
+    if request.user.rol != Roles.CAMPESINO:
+        return HttpResponseForbidden()
+
+    producto = get_object_or_404(Producto, id=id, usuario=request.user)
 
     if request.method == "POST":
         producto.activo = False

@@ -6,12 +6,18 @@ from .models import Usuario, Roles
 class UsuarioSerializer(serializers.ModelSerializer):
     class Meta:
         model = Usuario
-        fields = ['id','rol','first_name','last_name','celular', 'email']
+        fields = ['id',
+                  'rol',
+                  'first_name',
+                  'last_name',
+                  'celular',
+                  'email']
 
 
 # Controla el registro de nuevos usuarios y transforma el tipo de registro
 # recibido en el rol que será almacenado en el modelo Usuario.
 class RegistroUsuarioSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(write_only=True)
     
     # Se utiliza únicamente durante el registro para indicar si la persona
     # desea registrarse como campesino o comprador.
@@ -19,8 +25,14 @@ class RegistroUsuarioSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Usuario
-        fields = ['password','username','first_name','last_name',
-                  'email','documento','celular','tipo_registro']
+        fields = ['password',
+                  'username',
+                  'first_name',
+                  'last_name',
+                  'email',
+                  'documento',
+                  'celular',
+                  'tipo_registro']
         
     def create(self, validated_data):
         password = validated_data.pop('password')
@@ -56,7 +68,10 @@ class RegistroUsuarioSerializer(serializers.ModelSerializer):
 class ConsultarUsuariosSerializer(serializers.ModelSerializer):
     class Meta:
         model = Usuario
-        fields = ["id", "rol", "first_name", "last_name"]
+        fields = ["id",
+                  "rol",
+                  "first_name",
+                  "last_name"]
 
 
 # Define la información completa que puede consultarse al visualizar
@@ -64,8 +79,13 @@ class ConsultarUsuariosSerializer(serializers.ModelSerializer):
 class DetalleUsuarioSerializer(serializers.ModelSerializer):
     class Meta:
         model = Usuario
-        fields = ["id", "rol", "first_name", "last_name",
-                  "documento", "celular", "email"]
+        fields = ["id",
+                  "rol",
+                  "first_name",
+                  "last_name",
+                  "documento",
+                  "celular",
+                  "email"]
 
 
 # Controla los campos que un usuario puede modificar sobre su propia información,
@@ -73,7 +93,11 @@ class DetalleUsuarioSerializer(serializers.ModelSerializer):
 class ActualizarUsuarioSerializer(serializers.ModelSerializer):
     class Meta:
         model = Usuario
-        fields = ["first_name", "last_name", "documento", "celular", "email"]
+        fields = ["first_name",
+                  "last_name",
+                  "documento",
+                  "celular",
+                  "email"]
 
 
 # Permite al administrador modificar los datos del usuario incluyendo su rol,
@@ -81,4 +105,9 @@ class ActualizarUsuarioSerializer(serializers.ModelSerializer):
 class ActualizarUsuarioAdminSerializer(serializers.ModelSerializer):
     class Meta:
         model = Usuario
-        fields = ["rol", "first_name", "last_name", "documento", "celular", "email"]
+        fields = ["rol",
+                  "first_name",
+                  "last_name",
+                  "documento",
+                  "celular",
+                  "email"]

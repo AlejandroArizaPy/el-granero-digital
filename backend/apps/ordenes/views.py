@@ -32,9 +32,12 @@ class PedidoViewSet(
             return pedidos.filter(comprador=usuario)
         if usuario.rol == Roles.CAMPESINO:
             return pedidos.filter(vendedor=usuario)
+        if usuario.rol == Roles.ADMIN:
+            return pedidos
         return pedidos.none()
 
     def _pedido_bloqueado(self):
+        # Bloquea y vuelve a autorizar el pedido dentro de la transacción.
         pedido = get_object_or_404(
             self.get_queryset().select_for_update(),
             pk=self.kwargs["pk"],
@@ -43,6 +46,7 @@ class PedidoViewSet(
         return pedido
 
     def _cambiar_estado(self, pedido, estado_anterior, estado_nuevo):
+        # El filtro por estado anterior evita procesar dos veces la misma transición.
         cambiado = Pedido.objects.filter(
             pk=pedido.pk,
             vendedor=self.request.user,
@@ -52,6 +56,7 @@ class PedidoViewSet(
             raise ValidationError("El pedido ya cambió de estado o no permite esta operación.")
 
     def _respuesta_pedido(self, pedido):
+        # Devuelve el estado persistido después de la operación.
         pedido.refresh_from_db()
         return Response(self.get_serializer(pedido).data)
 
@@ -70,6 +75,7 @@ class PedidoViewSet(
                 EstadoPedido.EN_PREPARACION,
             )
 
+            # El inventario solo se descuenta al confirmar, dentro de la misma transacción.
             detalles = DetallePedido.objects.filter(pedido=pedido).order_by("producto_id")
             for detalle in detalles:
                 actualizado = Producto.objects.filter(
@@ -97,7 +103,7 @@ class PedidoViewSet(
 
             self._cambiar_estado(pedido, estado_anterior, EstadoPedido.CANCELADO)
 
-            # En preparación indica que la confirmación descontó el inventario.
+            # Solo en preparación hubo descuento que deba restaurarse.
             if estado_anterior == EstadoPedido.EN_PREPARACION:
                 detalles = DetallePedido.objects.filter(pedido=pedido).order_by("producto_id")
                 for detalle in detalles:

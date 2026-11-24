@@ -30,6 +30,7 @@ class PedidoAPITests(TestCase):
         self.otro_comprador = self.crear_usuario("otro_comprador", Roles.COMPRADOR)
         self.vendedor = self.crear_usuario("vendedor", Roles.CAMPESINO)
         self.otro_vendedor = self.crear_usuario("otro_vendedor", Roles.CAMPESINO)
+        self.admin = self.crear_usuario("admin_pedidos", Roles.ADMIN)
 
         self.producto_a = self.crear_producto(
             self.vendedor, "Tomate", "2.50", stock=10
@@ -108,6 +109,9 @@ class PedidoAPITests(TestCase):
         return reverse(f"pedido-{accion}", args=[pedido_id])
 
     def test_creacion_guarda_precios_historicos_total_y_no_descuenta_stock(self):
+        self.comprador.first_name = "Ana"
+        self.comprador.last_name = "Rojas"
+        self.comprador.save(update_fields=["first_name", "last_name"])
         self.client.force_authenticate(self.comprador)
 
         respuesta = self.client.post(self.url_lista, self.datos_pedido(), format="json")
@@ -125,6 +129,11 @@ class PedidoAPITests(TestCase):
         self.assertEqual(respuesta.data["detalles"][0]["subtotal"], Decimal("5.00"))
         self.assertEqual(respuesta.data["detalles"][1]["subtotal"], Decimal("3.25"))
         self.assertEqual(respuesta.data["total"], "8.25")
+        self.assertEqual(respuesta.data["comprador_nombre"], "Ana Rojas")
+        self.assertEqual(
+            respuesta.data["detalles"][0]["producto_nombre"],
+            "Tomate",
+        )
         self.producto_a.refresh_from_db()
         self.producto_b.refresh_from_db()
         self.assertEqual(self.producto_a.stock, 10)
@@ -364,3 +373,51 @@ class PedidoAPITests(TestCase):
             [pedido["id"] for pedido in respuesta_otra_lista.data],
             [pedido_otro_vendedor_id],
         )
+
+    def test_admin_puede_listar_todos_los_pedidos_y_consultar_detalle(self):
+        pedido_id, _ = self.crear_pedido()
+        otro_pedido_id, _ = self.crear_pedido(
+            [{"producto": self.producto_otro_vendedor.pk, "cantidad": 1}],
+            comprador=self.otro_comprador,
+        )
+        estados_antes = dict(Pedido.objects.values_list("pk", "estado"))
+        stock_antes = {
+            self.producto_a.pk: self.producto_a.stock,
+            self.producto_b.pk: self.producto_b.stock,
+            self.producto_otro_vendedor.pk: self.producto_otro_vendedor.stock,
+        }
+        self.client.force_authenticate(self.admin)
+
+        respuesta_lista = self.client.get(self.url_lista)
+        respuesta_detalle = self.client.get(
+            reverse("pedido-detail", args=[otro_pedido_id])
+        )
+
+        self.assertEqual(respuesta_lista.status_code, status.HTTP_200_OK)
+        self.assertEqual(
+            {pedido["id"] for pedido in respuesta_lista.data},
+            {pedido_id, otro_pedido_id},
+        )
+        self.assertEqual(respuesta_detalle.status_code, status.HTTP_200_OK)
+        self.assertEqual(respuesta_detalle.data["id"], otro_pedido_id)
+
+        self.assertEqual(dict(Pedido.objects.values_list("pk", "estado")), estados_antes)
+        for producto in (self.producto_a, self.producto_b, self.producto_otro_vendedor):
+            producto.refresh_from_db()
+            self.assertEqual(producto.stock, stock_antes[producto.pk])
+
+    def test_admin_no_puede_transicionar_pedidos_ni_modificar_inventario(self):
+        pedido_id, _ = self.crear_pedido()
+        self.client.force_authenticate(self.admin)
+
+        for accion in ("confirmar", "cancelar", "completar"):
+            with self.subTest(accion=accion):
+                respuesta = self.client.post(self.url_accion(accion, pedido_id))
+                self.assertEqual(respuesta.status_code, status.HTTP_403_FORBIDDEN)
+
+        pedido = Pedido.objects.get(pk=pedido_id)
+        self.producto_a.refresh_from_db()
+        self.producto_b.refresh_from_db()
+        self.assertEqual(pedido.estado, EstadoPedido.PENDIENTE)
+        self.assertEqual(self.producto_a.stock, 10)
+        self.assertEqual(self.producto_b.stock, 5)

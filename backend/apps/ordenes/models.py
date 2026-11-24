@@ -6,6 +6,7 @@ from decimal import Decimal
 
 
 class EstadoPedido(models.TextChoices):
+    # El código se guarda en la base; la etiqueta se muestra a las personas.
     PENDIENTE = "PDT", "Pendiente"
     EN_PREPARACION = "ENP", "En preparación"
     COMPLETADO = "CPO", "Completado"
@@ -19,6 +20,7 @@ class MetodoPago(models.TextChoices):
     
 
 class Pedido(models.Model):
+    # En el flujo de pedidos, el comprador compra a un único campesino vendedor.
     comprador = models.ForeignKey(Usuario,
                                 on_delete=models.PROTECT,
                                 related_name="pedidos_realizados")
@@ -32,9 +34,11 @@ class Pedido(models.Model):
         default=EstadoPedido.PENDIENTE
     )
     direccion_entrega = models.CharField(max_length=120)
+    # Se conserva el total del pedido para consultar el valor confirmado.
     total = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal("0.00"))
     
     def recalcular_total(self):
+        # El total se suma desde los detalles y sus precios históricos.
         sum_subtotales = Decimal("0.00")
         for detalle in self.detalles.all():
             sum_subtotales += (detalle.cantidad * detalle.precio_unitario)
@@ -49,6 +53,7 @@ class Pedido(models.Model):
     )
     
 class DetallePedido(models.Model):
+    # El detalle conserva cantidad y precio al momento de crear el pedido.
     pedido = models.ForeignKey(Pedido, on_delete=models.CASCADE,related_name="detalles")
     producto = models.ForeignKey(Producto, on_delete=models.PROTECT)
     cantidad = models.PositiveIntegerField(validators=[MinValueValidator(1)])

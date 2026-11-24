@@ -8,13 +8,20 @@ from .models import DetallePedido, EstadoPedido, Pedido
 
 class DetallePedidoSerializer(serializers.ModelSerializer):
     producto = serializers.PrimaryKeyRelatedField(queryset=Producto.objects.all())
+    producto_nombre = serializers.CharField(source="producto.nombre", read_only=True)
     cantidad = serializers.IntegerField(min_value=1)
     precio_unitario = serializers.DecimalField(read_only=True, max_digits=10, decimal_places=2)
     subtotal = serializers.SerializerMethodField()
 
     class Meta:
         model = DetallePedido
-        fields = ["producto", "cantidad", "precio_unitario", "subtotal"]
+        fields = [
+            "producto",
+            "producto_nombre",
+            "cantidad",
+            "precio_unitario",
+            "subtotal",
+        ]
 
     def validate_producto(self, producto):
         if not producto.activo:
@@ -22,11 +29,13 @@ class DetallePedidoSerializer(serializers.ModelSerializer):
         return producto
 
     def get_subtotal(self, obj):
+        # Usa el precio guardado en el detalle, no el precio actual del catálogo.
         return obj.cantidad * obj.precio_unitario
 
 
 class PedidoSerializer(serializers.ModelSerializer):
     comprador = serializers.PrimaryKeyRelatedField(read_only=True)
+    comprador_nombre = serializers.SerializerMethodField()
     vendedor = serializers.PrimaryKeyRelatedField(read_only=True)
     fecha = serializers.DateTimeField(read_only=True)
     estado = serializers.ChoiceField(choices=EstadoPedido.choices, read_only=True)
@@ -38,6 +47,7 @@ class PedidoSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "comprador",
+            "comprador_nombre",
             "vendedor",
             "fecha",
             "estado",
@@ -48,7 +58,13 @@ class PedidoSerializer(serializers.ModelSerializer):
             "detalles",
         ]
 
+    def get_comprador_nombre(self, obj):
+        # Solo se comparte el nombre; no se exponen correo, documento ni celular.
+        nombre = obj.comprador.get_full_name().strip()
+        return nombre or f"Comprador #{obj.comprador_id}"
+
     def validate(self, attrs):
+        # Antes de crear, comprueba rol, productos únicos y un único vendedor.
         comprador = self.context["request"].user
         detalles = attrs.get("detalles", [])
 
@@ -79,11 +95,12 @@ class PedidoSerializer(serializers.ModelSerializer):
 
     @transaction.atomic
     def create(self, validated_data):
+        # Si falla cualquier inserción, Django revierte el pedido completo.
         comprador = self.context["request"].user
         detalles_data = validated_data.pop("detalles")
         producto_ids = [detalle["producto"].pk for detalle in detalles_data]
 
-        # Revalidar dentro de la transacción para tomar el precio y estado actuales.
+        # Se vuelven a bloquear y comprobar productos para guardar precios vigentes.
         productos = {
             producto.pk: producto
             for producto in Producto.objects.select_for_update().filter(
@@ -113,6 +130,7 @@ class PedidoSerializer(serializers.ModelSerializer):
             **validated_data,
         )
 
+        # Crear el pedido no cambia el stock; el descuento ocurre al confirmar.
         for detalle_data in detalles_data:
             producto = productos[detalle_data["producto"].pk]
             DetallePedido.objects.create(

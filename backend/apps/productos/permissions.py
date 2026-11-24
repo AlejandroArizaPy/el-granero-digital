@@ -13,6 +13,10 @@ class PermisoProductos(BasePermission):
         if not request.user.is_authenticated:
             return False
 
+        # Las rutas dedicadas de administración son exclusivas del rol ADMIN.
+        if view.action in ("administracion", "activar", "desactivar"):
+            return request.user.rol == Roles.ADMIN
+
         # Únicamente los campesinos pueden publicar productos.
         if view.action == "create":
             return request.user.rol == Roles.CAMPESINO
@@ -26,6 +30,10 @@ class PermisoProductos(BasePermission):
         return True
 
     def has_object_permission(self, request, view, obj):
+        # Solo ADMIN puede cambiar el estado de cualquier publicación.
+        if view.action in ("activar", "desactivar"):
+            return request.user.rol == Roles.ADMIN
+
         # Todos los usuarios autenticados pueden consultar productos.
         if view.action == "retrieve":
             return True

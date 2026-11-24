@@ -88,6 +88,14 @@ class DetalleUsuarioSerializer(serializers.ModelSerializer):
                   "email"]
 
 
+# Expone solo los datos necesarios para gestionar cuentas desde el API.
+class AdministrarUsuarioSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Usuario
+        fields = ["id", "username", "first_name", "last_name", "rol", "is_active"]
+        read_only_fields = fields
+
+
 # Controla los campos que un usuario puede modificar sobre su propia información,
 # evitando que pueda modificar directamente su rol.        
 class ActualizarUsuarioSerializer(serializers.ModelSerializer):
@@ -100,14 +108,27 @@ class ActualizarUsuarioSerializer(serializers.ModelSerializer):
                   "email"]
 
 
-# Permite al administrador modificar los datos del usuario incluyendo su rol,
-# manteniendo esta capacidad separada de la actualización realizada por usuarios normales.
+# Permite a ADMIN editar datos de perfil sin habilitar cambios de rol o permisos Django.
 class ActualizarUsuarioAdminSerializer(serializers.ModelSerializer):
+    campos_privilegiados = {"rol", "is_active", "is_staff", "is_superuser"}
+
     class Meta:
         model = Usuario
-        fields = ["rol",
-                  "first_name",
+        fields = ["first_name",
                   "last_name",
                   "documento",
                   "celular",
                   "email"]
+
+    def to_internal_value(self, data):
+        enviados = self.campos_privilegiados.intersection(data)
+        if enviados:
+            raise serializers.ValidationError({
+                campo: "Este campo solo puede cambiarse mediante una operación autorizada."
+                for campo in enviados
+            })
+        return super().to_internal_value(data)
+
+    def to_representation(self, instance):
+        # No devuelve datos personales en la respuesta de una actualización.
+        return AdministrarUsuarioSerializer(instance, context=self.context).data

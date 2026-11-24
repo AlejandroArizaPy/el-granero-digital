@@ -32,6 +32,7 @@ urlpatterns = [
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
 ]
 
+# En modo de desarrollo, Django también sirve imágenes subidas a MEDIA_ROOT.
 if settings.DEBUG:
     urlpatterns += static(
         settings.MEDIA_URL,

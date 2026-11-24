@@ -3,6 +3,9 @@ from rest_framework.routers import DefaultRouter
 from . import views
 
 router = DefaultRouter()
+# Registrar la ruta fija antes de `api/<pk>/` evita que "categorias" se
+# interprete como el identificador de un producto.
+router.register(r"api/categorias", views.CategoriaViewSet, basename="categoria")
 router.register(r"api", views.ProductoViewSet, basename="producto")
 
 urlpatterns = [

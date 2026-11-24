@@ -1,6 +1,4 @@
 // Importamos React
-import React from 'react';
-
 // Exportación nombrada explícita
 export const Footer = () => {
   return (

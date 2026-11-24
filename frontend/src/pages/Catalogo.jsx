@@ -1,74 +1,89 @@
-// Importamos Hooks de React para el manejo del estado local de la búsqueda
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { Header } from '../components/Header';
 import { Footer } from '../components/Footer';
+import { useCart } from '../context/CartContext';
+import { apiRequest, getApiErrorMessage } from '../services/api';
+import { formatCurrency } from '../utils/format';
 
 export const Catalogo = () => {
-  const navigate = useNavigate();
-
-  // Estado con el catálogo de productos extraído de tu HTML original[cite: 2]
-  const [productos] = useState([
-    { id: 1, nombre: 'Papa pastusa', categoria: 'Tubérculos', precio: 3500, img: '/img/papa-pastusa.jpg' },
-    { id: 2, nombre: 'Tomate chonto', categoria: 'Verduras', precio: 2000, img: '/img/tomate-chonto.jpg' },
-    { id: 3, nombre: 'Zanahoria', categoria: 'Hortalizas', precio: 2500, img: '/img/zanahoria.jpg' },
-    { id: 4, nombre: 'Cebolla larga', categoria: 'Hortalizas', precio: 1500, img: '/img/cebolla.jpg' },
-    { id: 5, nombre: 'Banano', categoria: 'Frutas', precio: 800, img: '/img/banano.avif' },
-    { id: 6, nombre: 'Fresas', categoria: 'Frutas', precio: 1200, img: '/img/fresas.avif' }
-  ]);
-
-  // Estado que captura el texto del buscador
+  const { addItem } = useCart();
+  const [productos, setProductos] = useState([]);
   const [busqueda, setBusqueda] = useState('');
+  const [message, setMessage] = useState('');
+  const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    // La API solo lista productos activos y exige el token de la sesión.
+    apiRequest('/productos/api/', { signal: controller.signal })
+      .then(({ data }) => setProductos(Array.isArray(data) ? data : []))
+      .catch((requestError) => {
+        if (requestError.name !== 'AbortError') setError(getApiErrorMessage(requestError));
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setIsLoading(false);
+      });
+
+    return () => controller.abort();
+  }, []);
+
+  const agregarProducto = (producto) => {
+    setError('');
+    setMessage('');
+    const result = addItem(producto);
+    if (result.ok) setMessage(`${producto.nombre} se agregó al carrito.`);
+    else setError(result.message);
+  };
+
+  // La búsqueda se aplica en memoria al catálogo ya recibido del servidor.
+  const productosFiltrados = productos.filter((producto) => (
+    producto.nombre.toLowerCase().includes(busqueda.trim().toLowerCase())
+  ));
 
   return (
     <>
       <Header />
-
-      {/* Barra de filtrado */}
       <section className="filtros">
-        <input 
-          type="text" 
-          placeholder="Buscar Productos..." 
+        <label htmlFor="buscar-productos">Buscar productos</label>
+        <input
+          id="buscar-productos"
+          type="search"
+          placeholder="Buscar productos…"
           value={busqueda}
-          onChange={(e) => setBusqueda(e.target.value)}
+          onChange={(event) => setBusqueda(event.target.value)}
         />
-
-        <select>
-          <option>Categoría</option>
-          <option>Frutas</option>
-          <option>Verduras</option>
-          <option>Tubérculos</option>
-        </select>
-
-        <select>
-          <option>Precio</option>
-          <option>Ascendente</option>
-          <option>Descendente</option>
-        </select>
-
-        <select>
-          <option>Ordenar por</option>
-          <option>Peso</option>
-          <option>Calificación</option>
-        </select>
       </section>
 
-      {/* Grid dinámico de productos filtrados */}
-      <section className="productos">
-        {productos
-          .filter(p => p.nombre.toLowerCase().includes(busqueda.toLowerCase()))
-          .map((producto) => (
-            <div className="card" key={producto.id}>
+      <main>
+        {message && <p role="status">{message}</p>}
+        {error && <p className="form-error" role="alert">{error}</p>}
+        {isLoading && <p role="status">Cargando productos…</p>}
+        {!isLoading && !error && productosFiltrados.length === 0 && (
+          <p role="status">
+            {productos.length === 0
+              ? 'Todavía no hay productos activos en el catálogo.'
+              : 'No hay productos que coincidan con la búsqueda.'}
+          </p>
+        )}
+
+        <section className="productos" aria-label="Catálogo de productos">
+          {productosFiltrados.map((producto) => (
+            <article className="card" key={producto.id}>
               <h3>{producto.nombre}</h3>
-              <img src={producto.img} alt={producto.nombre} />
-              <p>Categoría: {producto.categoria}</p>
-              <p>Precio: ${producto.precio.toLocaleString()} / kg</p>
-              <div className="estrellas">★★★★★</div>
-              <button onClick={() => navigate('/producto')}>Ver Detalle</button>
-            </div>
+              {producto.imagen && <img src={producto.imagen} alt={producto.nombre} />}
+              <p>Categoría: {producto.categoria_nombre || producto.categoria}</p>
+              <p>Precio: {formatCurrency(producto.precio)} / kg</p>
+              <p>Disponible: {producto.stock}</p>
+              <Link to={`/producto/${producto.id}`} className="btn">Ver detalle</Link>
+              <button type="button" onClick={() => agregarProducto(producto)}>
+                Agregar al carrito
+              </button>
+            </article>
           ))}
-      </section>
-
+        </section>
+      </main>
       <Footer />
     </>
   );

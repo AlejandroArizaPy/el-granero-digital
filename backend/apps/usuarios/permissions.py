@@ -23,6 +23,14 @@ class PermisoUsuarios(BasePermission):
                 return True
             else:
                 return False  
+
+        # Las acciones para cambiar el estado de una cuenta son administrativas.
+        elif view.action in ('activar', 'desactivar'):
+            return request.user.rol == Roles.ADMIN
+
+        # Un administrador no elimina cuentas desde esta API.
+        elif view.action == 'destroy' and request.user.rol == Roles.ADMIN:
+            return False
         
         # Las demás acciones autenticadas pasan a la validación sobre el objeto específico.
         else:
@@ -33,16 +41,14 @@ class PermisoUsuarios(BasePermission):
     # y la relación del usuario autenticado con el objeto solicitado.
     def has_object_permission(self, request, view, obj):
         
-        # Los administradores pueden consultar y modificar cualquier usuario,
-        # pero no pueden eliminar cuentas de otros usuarios.
+        # ADMIN consulta y actualiza perfiles ajenos; las acciones de estado se
+        # autorizan aparte y la API no permite que ADMIN elimine cuentas.
         if request.user.rol == Roles.ADMIN:
-            if view.action == 'retrieve' or view.action == 'update' or view.action == 'partial_update':
+            if view.action in ('retrieve', 'update', 'partial_update'):
                 return True
-            elif view.action == 'destroy':
-                if request.user.id == obj.id:
-                    return True
-                else:
-                    return False
+            if view.action in ('activar', 'desactivar'):
+                return True
+            return False
         
         # Los usuarios normales únicamente pueden operar sobre su propia cuenta.
         elif request.user.id == obj.id:

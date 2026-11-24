@@ -12,7 +12,7 @@ Plataforma tecnológica enfocada en conectar campesinos y compradores finales si
 - Django REST Framework
 
 ### Base de datos
-- MySQL
+- SQLite
 
 ## Integrantes
 - Alejandro Ariza Mojica
@@ -25,7 +25,7 @@ Plataforma tecnológica enfocada en conectar campesinos y compradores finales si
 - Publicación de productos
 - Catálogo agrícola
 - Gestión de pedidos
-- Contacto por WhatsApp
+- Contacto por WhatsApp (pendiente) 
 
 ## Estado del proyecto
 En desarrollo
